@@ -1,15 +1,15 @@
-'use server';
+"use server";
 
-import { openai } from '@ai-sdk/openai';
-import { streamObject } from 'ai';
+import { openai } from "@ai-sdk/openai";
+import { streamObject } from "ai";
 import {
   StreamableValue,
   createAI,
   createStreamableUI,
   createStreamableValue,
-} from 'ai/rsc';
-import { itinerarySchema } from './itinerary';
-import { ItineraryView } from './itinerary-view';
+} from "ai/rsc";
+import { itinerarySchema } from "./itinerary";
+import { ItineraryView } from "./itinerary-view";
 
 export async function submitItineraryRequest({
   destination,
@@ -18,13 +18,13 @@ export async function submitItineraryRequest({
   destination: string;
   lengthOfStay: string;
 }) {
-  'use server';
+  "use server";
 
   const itineraryComponent = createStreamableUI(<ItineraryView />);
   const isGenerating = createStreamableValue(true);
 
   streamObject({
-    model: openai('gpt-4-turbo'),
+    model: openai("gpt-4o"),
     maxTokens: 2500,
     schema: itinerarySchema,
     system:
@@ -36,7 +36,7 @@ export async function submitItineraryRequest({
       `Please suggest the best tourist activities for me to do.`,
   })
     // non-blocking: the generateItinerary call returns immediately
-    .then(async result => {
+    .then(async (result) => {
       try {
         for await (const partialItinerary of result.partialObjectStream) {
           itineraryComponent.update(
@@ -59,8 +59,8 @@ const initialAIState: {
   destination: string;
   lengthOfStay: string;
 } = {
-  destination: '',
-  lengthOfStay: '',
+  destination: "",
+  lengthOfStay: "",
 };
 
 const initialUIState: {
