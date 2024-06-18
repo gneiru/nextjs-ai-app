@@ -1,4 +1,4 @@
-import { PartialItinerary } from './itinerary';
+import type { PartialItinerary } from "./itinerary";
 
 export const ItineraryView = ({
   itinerary,
@@ -8,13 +8,13 @@ export const ItineraryView = ({
   <div className="mt-8">
     {itinerary?.days && (
       <>
-        <h2 className="mb-4 text-xl font-bold">Your Itinerary</h2>
+        <h2 className="mb-4 font-bold text-xl">Your Itinerary</h2>
         <div className="space-y-4">
           {itinerary.days.map(
             (day, index) =>
               day && (
-                <div key={index} className="p-4 border rounded-lg">
-                  <h3 className="font-bold">{day.theme ?? ''}</h3>
+                <div key={index} className="rounded-lg border p-4">
+                  <h3 className="font-bold">{day.theme ?? ""}</h3>
 
                   {day.activities?.map(
                     (activity, index) =>
@@ -29,7 +29,7 @@ export const ItineraryView = ({
                             </p>
                           )}
                           {activity.duration && (
-                            <p className="text-sm text-gray-400">{`Duration: ${activity.duration} hours`}</p>
+                            <p className="text-gray-400 text-sm">{`Duration: ${activity.duration} hours`}</p>
                           )}
                         </div>
                       ),

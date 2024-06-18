@@ -1,4 +1,7 @@
-import { z } from 'zod';
+import type { z } from "zod";
+
+// biome-ignore lint/suspicious/noExplicitAny: any
+export type ANY = any;
 
 /**
  * Any array of ToolDefinitions.
@@ -11,7 +14,7 @@ export type TAnyToolDefinitionArray = Array<
  * A map of ToolDefinitions, indexed by name.
  */
 export type TAnyToolDefinitionMap = Readonly<{
-  [K in string]: ToolDefinition<any, any>;
+  [K in string]: ToolDefinition<ANY, ANY>;
 }>;
 
 /**
@@ -22,7 +25,7 @@ export type TToolDefinitionMap<
 > = TToolDefinitionArray extends [infer TFirst, ...infer Rest]
   ? TFirst extends TAnyToolDefinitionArray[number]
     ? Rest extends TAnyToolDefinitionArray
-      ? Readonly<{ [K in TFirst['name']]: TFirst }> & TToolDefinitionMap<Rest>
+      ? Readonly<{ [K in TFirst["name"]]: TFirst }> & TToolDefinitionMap<Rest>
       : never
     : never
   : Readonly<{}>;

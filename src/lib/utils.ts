@@ -1,13 +1,14 @@
-import {
+import type {
+  ANY,
   TAnyToolDefinitionArray,
   TToolDefinitionMap,
 } from "@/lib/utils/tool-definition";
 import { OpenAIStream } from "ai";
-import type OpenAI from "openai";
-import zodToJsonSchema from "zod-to-json-schema";
 import { type ClassValue, clsx } from "clsx";
+import type OpenAI from "openai";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
+import type { z } from "zod";
+import zodToJsonSchema from "zod-to-json-schema";
 
 const consumeStream = async (stream: ReadableStream) => {
   const reader = stream.getReader();
@@ -40,7 +41,7 @@ export function runOpenAICompletion<
     functionsMap[fn.name] = fn;
   }
 
-  let onFunctionCall = {} as any;
+  const onFunctionCall = {} as ANY;
 
   const { functions, ...rest } = params;
 
@@ -58,7 +59,7 @@ export function runOpenAICompletion<
               unknown
             >,
           })),
-        })) as any,
+        })) as ANY,
         {
           async experimental_onFunctionCall(functionCallPayload) {
             hasFunction = true;
@@ -76,7 +77,7 @@ export function runOpenAICompletion<
 
             if (!parsedArgs.success) {
               throw new Error(
-                `Invalid function call in message. Expected a function call object`,
+                "Invalid function call in message. Expected a function call object",
               );
             }
 
@@ -132,7 +133,7 @@ export const formatNumber = (value: number) =>
   }).format(value);
 
 export const runAsyncFnWithoutBlocking = (
-  fn: (...args: any) => Promise<any>,
+  fn: (...args: ANY) => Promise<ANY>,
 ) => {
   fn();
 };

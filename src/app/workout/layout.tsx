@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   ...meta,
   title: {
     default: "Workout Planner",
-    template: `%s - Workout Planner`,
+    template: "%s - Workout Planner",
   },
   icons: {
     icon: "/favicon.ico",
@@ -46,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <div
-      className={`font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}
+      className={`font-sans antialiased ${GeistSans.variable}${GeistMono.variable}`}
     >
       <AI>{children}</AI>
     </div>

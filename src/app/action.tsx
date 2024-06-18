@@ -4,26 +4,27 @@ import { createAI, createStreamableUI, getMutableAIState } from "ai/rsc";
 import OpenAI from "openai";
 
 import {
-  spinner,
   BotCard,
   BotMessage,
-  SystemMessage,
-  Stock,
-  Purchase,
-  Stocks,
   Events,
+  Purchase,
+  Stock,
+  Stocks,
+  SystemMessage,
+  spinner,
 } from "@/components/llm-stocks";
 
-import {
-  runAsyncFnWithoutBlocking,
-  sleep,
-  formatNumber,
-  runOpenAICompletion,
-} from "@/lib/utils";
-import { z } from "zod";
-import { StockSkeleton } from "@/components/llm-stocks/stock-skeleton";
 import { EventsSkeleton } from "@/components/llm-stocks/events-skeleton";
+import { StockSkeleton } from "@/components/llm-stocks/stock-skeleton";
 import { StocksSkeleton } from "@/components/llm-stocks/stocks-skeleton";
+import {
+  formatNumber,
+  runAsyncFnWithoutBlocking,
+  runOpenAICompletion,
+  sleep,
+} from "@/lib/utils";
+import type { ANY } from "@/lib/utils/tool-definition";
+import { z } from "zod";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
@@ -134,7 +135,7 @@ If the user wants to sell stock, or complete another impossible task, respond th
 
 Besides that, you can also chat with users and do some calculations if needed.`,
       },
-      ...aiState.get().map((info: any) => ({
+      ...aiState.get().map((info: ANY) => ({
         role: info.role,
         content: info.content,
         name: info.name,
@@ -302,7 +303,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
           {
             role: "function",
             name: "show_stock_purchase_ui",
-            content: `[Invalid amount]`,
+            content: "[Invalid amount]",
           },
         ]);
         return;

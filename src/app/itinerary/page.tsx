@@ -1,34 +1,34 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { readStreamableValue, useUIState } from 'ai/rsc';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { readStreamableValue, useUIState } from "ai/rsc";
+import { useState } from "react";
 import {
-  GenerateItineraryAI,
+  type GenerateItineraryAI,
   submitItineraryRequest,
-} from './generate-itinerary';
+} from "./generate-itinerary";
 
 // Force the page to be dynamic and allow streaming responses up to 30 seconds
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export default function ItineraryPage() {
-  const [destination, setDestination] = useState('');
-  const [lengthOfStay, setLengthOfStay] = useState('');
+  const [destination, setDestination] = useState("");
+  const [lengthOfStay, setLengthOfStay] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useUIState<typeof GenerateItineraryAI>();
 
   return (
-    <div className="w-full max-w-2xl p-4 mx-auto md:p-6 lg:p-8">
-      <h1 className="mb-6 text-2xl font-bold text-center">
+    <div className="mx-auto w-full max-w-2xl p-4 lg:p-8 md:p-6">
+      <h1 className="mb-6 text-center font-bold text-2xl">
         City Travel Itinerary Planner
       </h1>
 
       <form
         className="space-y-4"
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault();
 
           const result = await submitItineraryRequest({
@@ -54,7 +54,7 @@ export default function ItineraryPage() {
             required
             value={destination}
             disabled={isGenerating}
-            onChange={e => setDestination(e.target.value)}
+            onChange={(e) => setDestination(e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -68,7 +68,7 @@ export default function ItineraryPage() {
             max="7" // Maximum length of stay
             value={lengthOfStay}
             disabled={isGenerating}
-            onChange={e => setLengthOfStay(e.target.value)}
+            onChange={(e) => setLengthOfStay(e.target.value)}
           />
         </div>
         <Button className="w-full" type="submit" disabled={isGenerating}>

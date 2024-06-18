@@ -1,13 +1,14 @@
-import {
+import type {
+  ANY,
   TAnyToolDefinitionArray,
   TToolDefinitionMap,
-} from '@/lib/utils/tool-definition';
-import { OpenAIStream } from 'ai';
-import type OpenAI from 'openai';
-import zodToJsonSchema from 'zod-to-json-schema';
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { z } from 'zod';
+} from "@/lib/utils/tool-definition";
+import { OpenAIStream } from "ai";
+import { type ClassValue, clsx } from "clsx";
+import type OpenAI from "openai";
+import { twMerge } from "tailwind-merge";
+import type { z } from "zod";
+import zodToJsonSchema from "zod-to-json-schema";
 
 const consumeStream = async (stream: ReadableStream) => {
   const reader = stream.getReader();
@@ -20,7 +21,7 @@ const consumeStream = async (stream: ReadableStream) => {
 export function runOpenAICompletion<
   T extends Omit<
     Parameters<typeof OpenAI.prototype.chat.completions.create>[0],
-    'functions'
+    "functions"
   >,
   const TFunctions extends TAnyToolDefinitionArray,
 >(
@@ -29,7 +30,7 @@ export function runOpenAICompletion<
     functions: TFunctions;
   },
 ) {
-  let text = '';
+  let text = "";
   let hasFunction = false;
 
   type TToolMap = TToolDefinitionMap<TFunctions>;
@@ -40,7 +41,7 @@ export function runOpenAICompletion<
     functionsMap[fn.name] = fn;
   }
 
-  let onFunctionCall = {} as any;
+  const onFunctionCall = {} as ANY;
 
   const { functions, ...rest } = params;
 
@@ -50,7 +51,7 @@ export function runOpenAICompletion<
         (await openai.chat.completions.create({
           ...rest,
           stream: true,
-          functions: functions.map(fn => ({
+          functions: functions.map((fn) => ({
             name: fn.name,
             description: fn.description,
             parameters: zodToJsonSchema(fn.parameters) as Record<
@@ -58,7 +59,7 @@ export function runOpenAICompletion<
               unknown
             >,
           })),
-        })) as any,
+        })) as ANY,
         {
           async experimental_onFunctionCall(functionCallPayload) {
             hasFunction = true;
@@ -76,7 +77,7 @@ export function runOpenAICompletion<
 
             if (!parsedArgs.success) {
               throw new Error(
-                `Invalid function call in message. Expected a function call object`,
+                "Invalid function call in message. Expected a function call object",
               );
             }
 
@@ -84,7 +85,7 @@ export function runOpenAICompletion<
           },
           onToken(token) {
             text += token;
-            if (text.startsWith('{')) return;
+            if (text.startsWith("{")) return;
             onTextContent(text, false);
           },
           onFinal() {
@@ -102,14 +103,14 @@ export function runOpenAICompletion<
     ) => {
       onTextContent = callback;
     },
-    onFunctionCall: <TName extends TFunctions[number]['name']>(
+    onFunctionCall: <TName extends TFunctions[number]["name"]>(
       name: TName,
       callback: (
         args: z.output<
           TName extends keyof TToolMap
             ? TToolMap[TName] extends infer TToolDef
               ? TToolDef extends TAnyToolDefinitionArray[number]
-                ? TToolDef['parameters']
+                ? TToolDef["parameters"]
                 : never
               : never
             : never
@@ -126,19 +127,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const formatNumber = (value: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(value);
 
 export const runAsyncFnWithoutBlocking = (
-  fn: (...args: any) => Promise<any>,
+  fn: (...args: ANY) => Promise<ANY>,
 ) => {
   fn();
 };
 
 export const sleep = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms));
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 // Fake data
 export function getStockPrice(name: string) {

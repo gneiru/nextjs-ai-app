@@ -3,7 +3,7 @@
 import { openai } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import {
-  StreamableValue,
+  type StreamableValue,
   createAI,
   createStreamableUI,
   createStreamableValue,
@@ -28,12 +28,10 @@ export async function submitItineraryRequest({
     maxTokens: 2500,
     schema: itinerarySchema,
     system:
-      `You help planning travel itineraries. ` +
+      "You help planning travel itineraries. " +
       `Respond to the users' request with a list ` +
-      `of the best stops to make in their destination.`,
-    prompt:
-      `I am planning a trip to ${destination} for ${lengthOfStay} days. ` +
-      `Please suggest the best tourist activities for me to do.`,
+      "of the best stops to make in their destination.",
+    prompt: `I am planning a trip to ${destination} for ${lengthOfStay} days. Please suggest the best tourist activities for me to do.`,
   })
     // non-blocking: the generateItinerary call returns immediately
     .then(async (result) => {

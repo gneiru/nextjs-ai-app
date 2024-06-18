@@ -1,5 +1,5 @@
-import { DeepPartial } from 'ai';
-import { z } from 'zod';
+import type { DeepPartial } from "ai";
+import { z } from "zod";
 
 export const itinerarySchema = z.object({
   days: z.array(

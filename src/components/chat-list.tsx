@@ -1,6 +1,6 @@
-import { Separator } from '@/components/ui/separator';
-
-export function ChatList({ messages }: { messages: any[] }) {
+export function ChatList({
+  messages,
+}: { messages: { id: number; display: React.ReactNode }[] }) {
   if (!messages.length) {
     return null;
   }
