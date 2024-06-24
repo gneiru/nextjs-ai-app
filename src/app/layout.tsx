@@ -58,7 +58,7 @@ export default function RootLayout({
         <AI>
           <Providers
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >

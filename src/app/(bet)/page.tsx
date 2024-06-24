@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { useActions, useUIState } from "ai/rsc";
 
 import { ChatList } from "@/components/chat-list";
-import { FooterText } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { IconArrowElbow, IconPlus } from "@/components/ui/icons";
 import {
@@ -175,7 +174,6 @@ export default function Page() {
                 </div>
               </div>
             </form>
-            <FooterText className="hidden sm:block" />
           </div>
         </div>
       </div>

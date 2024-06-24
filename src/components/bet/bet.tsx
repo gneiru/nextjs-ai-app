@@ -35,11 +35,11 @@ export function Bet({ team, amount }: { team: string; amount: number }) {
           {purchasingUI}
         </div>
       ) : (
-        <div className="rounded-xl border bg-zinc-950 p-4 text-green-400">
-          <div className="float-right inline-block rounded-full bg-white/10 px-2 py-1 text-xs">
+        <div className="rounded-xl border bg-background p-4 text-foreground">
+          <div className="float-right inline-block rounded-full px-2 py-1 text-xs">
             +1.23% ↑
           </div>
-          <div className="text-lg text-zinc-300">{team}</div>
+          <div className="text-lg text-muted-foreground">{team}</div>
           <div className="font-bold text-3xl">{amount}</div>
 
           <S.Select
@@ -61,7 +61,7 @@ export function Bet({ team, amount }: { team: string; amount: number }) {
             Click the button below to bet on {team}.
           </div>
           <Button
-            className="w-full"
+            className="mt-2 w-full"
             type="submit"
             disabled={isPending}
             onClick={submit}

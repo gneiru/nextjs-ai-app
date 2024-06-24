@@ -193,11 +193,7 @@ async function submitUserMessage(content: string) {
   });
 
   completion.onFunctionCall("list_games", async ({ games }) => {
-    reply.update(
-      <BotCard>
-        <Loader2 className="size-5 animate-spin" />
-      </BotCard>,
-    );
+    reply.update(<BotCard>Showing games...</BotCard>);
 
     await sleep(1000);
 
