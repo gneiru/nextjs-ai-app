@@ -4,42 +4,37 @@ import { createAI, createStreamableUI, getMutableAIState } from "ai/rsc";
 import OpenAI from "openai";
 
 import {
-  BotCard,
-  BotMessage,
-  Events,
-  Purchase,
-  Stock,
-  Stocks,
-  SystemMessage,
-  spinner,
-} from "@/components/llm-stocks";
-
-import { EventsSkeleton } from "@/components/llm-stocks/events-skeleton";
-import { StockSkeleton } from "@/components/llm-stocks/stock-skeleton";
-import { StocksSkeleton } from "@/components/llm-stocks/stocks-skeleton";
-import {
-  formatNumber,
   runAsyncFnWithoutBlocking,
   runOpenAICompletion,
   sleep,
 } from "@/lib/utils";
 import type { ANY } from "@/lib/utils/tool-definition";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+import {
+  Games,
+  Bet,
+  Winnings,
+  BotCard,
+  BotMessage,
+  SystemMessage,
+  Spinner,
+} from "@/components/bet";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-async function confirmPurchase(symbol: string, price: number, amount: number) {
+async function confirmBet(amount: number, team: string, symbol: string) {
   "use server";
 
   const aiState = getMutableAIState<typeof AI>();
 
-  const purchasing = createStreamableUI(
+  const gui = createStreamableUI(
     <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
+      <Spinner />
       <p className="mb-2">
-        Purchasing {amount} ${symbol}...
+        Betting {amount} ${symbol}...
       </p>
     </div>,
   );
@@ -50,30 +45,28 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
     // You can update the UI at any point.
     await sleep(1000);
 
-    purchasing.update(
+    gui.update(
       <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
+        <Spinner />
         <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
+          Betting {amount} ${symbol}... working on it...
         </p>
       </div>,
     );
 
     await sleep(1000);
 
-    purchasing.done(
+    gui.done(
       <div>
         <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{" "}
-          {formatNumber(amount * price)}
+          You have successfully betted {amount} ${symbol} on {team}.
         </p>
       </div>,
     );
 
     systemMessage.done(
       <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={" "}
-        {formatNumber(amount * price)}.
+        You have betted {amount} shares of {symbol} on {team}.
       </SystemMessage>,
     );
 
@@ -81,15 +74,13 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
       ...aiState.get(),
       {
         role: "system",
-        content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-          amount * price
-        }]`,
+        content: `[User has betted ${amount} shares of ${symbol} on ${team}]`,
       },
     ]);
   });
 
   return {
-    purchasingUI: purchasing.value,
+    gui: gui.value,
     newMessage: {
       id: Date.now(),
       display: systemMessage.value,
@@ -110,30 +101,33 @@ async function submitUserMessage(content: string) {
   ]);
 
   const reply = createStreamableUI(
-    <BotMessage className="items-center">{spinner}</BotMessage>,
+    <BotMessage className="items-center">
+      <Spinner />
+    </BotMessage>,
   );
 
   const completion = runOpenAICompletion(openai, {
-    model: "gpt-3.5-turbo",
+    model: "gpt-4o",
     stream: true,
     messages: [
       {
         role: "system",
         content: `\
-You are a stock trading conversation bot and you can help users buy stocks, step by step.
-You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
+        You are a betting assistant and you can help users bet on teams, step by step.
+        You and the user can discuss winnings and the user can adjust the amount of bets they want to bet, or remove their bets, in the UI.
 
-Messages inside [] means that it's a UI element or a user event. For example:
-- "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-- "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
+        Messages inside [] means that it's a UI element or a user event. For example:
+        - "[Winnings for Away = $100]" means that an interface of the winnings for the team Away is shown to the user.
+        - "[User has changed the amount of Away to 10]" means that the user has changed the amount of Away to 10 in the UI.
+        - "[User has removed their bet for Away]" means that the user has removed Away from the bet list.
 
-If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-If the user just wants the price, call \`show_stock_price\` to show the price.
-If you want to show trending stocks, call \`list_stocks\`.
-If you want to show events, call \`get_events\`.
-If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
+        If the user requests betting for a team, call \`show_bet_ui\` to show the bet UI.
+        If the user just wants the winnings, call \`show_winnings\` to show the winnings.
+        If you want to show games, call \`list_games\`.
+        If the user wants to complete impossible tasks, respond that you are only an Bet Assistant and cannot do that.
+        a demo and cannot do that.
 
-Besides that, you can also chat with users and do some calculations if needed.`,
+        Besides that, you can also chat with users and do some calculations if needed.`,
       },
       ...aiState.get().map((info: ANY) => ({
         role: info.role,
@@ -143,62 +137,45 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     ],
     functions: [
       {
-        name: "show_stock_price",
+        name: "show_bet_ui",
         description:
-          "Get the current stock price of a given stock or currency. Use this to show the price to the user.",
+          "Show the bet UI for a team. Use this if the user wants to bet on a team.",
         parameters: z.object({
-          symbol: z
+          amount: z.number().describe("The amount of money to bet"),
+          team: z
             .string()
             .describe(
-              "The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.",
+              "The name of the team to bet on. e.g. Home, Away, or Draw.",
             ),
-          price: z.number().describe("The price of the stock."),
-          delta: z.number().describe("The change in price of the stock"),
         }),
       },
       {
-        name: "show_stock_purchase_ui",
+        name: "show_winnings",
         description:
-          "Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.",
+          "Show the winnings for a team. Use this if the user wants to see the winnings.",
         parameters: z.object({
-          symbol: z
+          team: z
             .string()
             .describe(
-              "The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.",
-            ),
-          price: z.number().describe("The price of the stock."),
-          numberOfShares: z
-            .number()
-            .describe(
-              "The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.",
+              "The name of the team to show the winnings for. e.g. Home, Away, or Draw.",
             ),
         }),
       },
       {
-        name: "list_stocks",
-        description: "List three imaginary stocks that are trending.",
+        name: "list_games",
+        description: "List the games that are currently in progress.",
         parameters: z.object({
-          stocks: z.array(
-            z.object({
-              symbol: z.string().describe("The symbol of the stock"),
-              price: z.number().describe("The price of the stock"),
-              delta: z.number().describe("The change in price of the stock"),
-            }),
-          ),
-        }),
-      },
-      {
-        name: "get_events",
-        description:
-          "List funny imaginary events between user highlighted dates that describe stock activity.",
-        parameters: z.object({
-          events: z.array(
+          games: z.array(
             z.object({
               date: z
                 .string()
-                .describe("The date of the event, in ISO-8601 format"),
-              headline: z.string().describe("The headline of the event"),
-              description: z.string().describe("The description of the event"),
+                .describe("The date of the game, in ISO-8601 format"),
+              homeTeam: z.string().describe("The name of the home team"),
+              awayTeam: z.string().describe("The name of the away team"),
+              winningTeam: z.string().describe("The name of the winning team"),
+              winningAmount: z
+                .number()
+                .describe("The amount of money won by the winning team"),
             }),
           ),
         }),
@@ -215,10 +192,10 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     }
   });
 
-  completion.onFunctionCall("list_stocks", async ({ stocks }) => {
+  completion.onFunctionCall("list_games", async ({ games }) => {
     reply.update(
       <BotCard>
-        <StocksSkeleton />
+        <Loader2 className="size-5 animate-spin" />
       </BotCard>,
     );
 
@@ -226,7 +203,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
 
     reply.done(
       <BotCard>
-        <Stocks stocks={stocks} />
+        <Games games={games} />
       </BotCard>,
     );
 
@@ -234,16 +211,16 @@ Besides that, you can also chat with users and do some calculations if needed.`,
       ...aiState.get(),
       {
         role: "function",
-        name: "list_stocks",
-        content: JSON.stringify(stocks),
+        name: "list_games",
+        content: JSON.stringify(games),
       },
     ]);
   });
 
-  completion.onFunctionCall("get_events", async ({ events }) => {
+  completion.onFunctionCall("show_winnings", async ({ team }) => {
     reply.update(
       <BotCard>
-        <EventsSkeleton />
+        <Loader2 className="size-5 animate-spin" />
       </BotCard>,
     );
 
@@ -251,7 +228,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
 
     reply.done(
       <BotCard>
-        <Events events={events} />
+        <Winnings team={team} />
       </BotCard>,
     );
 
@@ -259,85 +236,36 @@ Besides that, you can also chat with users and do some calculations if needed.`,
       ...aiState.get(),
       {
         role: "function",
-        name: "get_events",
-        content: JSON.stringify(events),
+        name: "get_winnings",
+        content: JSON.stringify(team),
       },
     ]);
   });
 
-  completion.onFunctionCall(
-    "show_stock_price",
-    async ({ symbol, price, delta }) => {
-      reply.update(
-        <BotCard>
-          <StockSkeleton />
-        </BotCard>,
-      );
+  completion.onFunctionCall("show_bet_ui", async ({ team, amount }) => {
+    reply.update(
+      <BotCard>
+        <Loader2 className="size-5 animate-spin" />
+      </BotCard>,
+    );
 
-      await sleep(1000);
+    await sleep(1000);
 
-      reply.done(
-        <BotCard>
-          <Stock name={symbol} price={price} delta={delta} />
-        </BotCard>,
-      );
+    reply.done(
+      <BotCard>
+        <Bet team={team} amount={amount} />
+      </BotCard>,
+    );
 
-      aiState.done([
-        ...aiState.get(),
-        {
-          role: "function",
-          name: "show_stock_price",
-          content: `[Price of ${symbol} = ${price}]`,
-        },
-      ]);
-    },
-  );
-
-  completion.onFunctionCall(
-    "show_stock_purchase_ui",
-    ({ symbol, price, numberOfShares = 100 }) => {
-      if (numberOfShares <= 0 || numberOfShares > 1000) {
-        reply.done(<BotMessage>Invalid amount</BotMessage>);
-        aiState.done([
-          ...aiState.get(),
-          {
-            role: "function",
-            name: "show_stock_purchase_ui",
-            content: "[Invalid amount]",
-          },
-        ]);
-        return;
-      }
-
-      reply.done(
-        <>
-          <BotMessage>
-            Sure!{" "}
-            {typeof numberOfShares === "number"
-              ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
-              : `How many $${symbol} would you like to purchase?`}
-          </BotMessage>
-          <BotCard showAvatar={false}>
-            <Purchase
-              defaultAmount={numberOfShares}
-              name={symbol}
-              price={+price}
-            />
-          </BotCard>
-        </>,
-      );
-      aiState.done([
-        ...aiState.get(),
-        {
-          role: "function",
-          name: "show_stock_purchase_ui",
-          content: `[UI for purchasing ${numberOfShares} shares of ${symbol}. Current price = ${price}, total cost = ${
-            numberOfShares * price
-          }]`,
-        },
-      ]);
-    },
-  );
+    aiState.done([
+      ...aiState.get(),
+      {
+        role: "function",
+        name: "show_bet_ui",
+        content: `[User has changed the amount of ${team} to ${amount}]`,
+      },
+    ]);
+  });
 
   return {
     id: Date.now(),
@@ -362,7 +290,7 @@ const initialUIState: {
 export const AI = createAI({
   actions: {
     submitUserMessage,
-    confirmPurchase,
+    confirmBet,
   },
   initialUIState,
   initialAIState,

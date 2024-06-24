@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { UserMessage } from "@/components/llm-stocks/message";
 import { useActions, useUIState } from "ai/rsc";
 
 import { ChatList } from "@/components/chat-list";
-import { EmptyScreen } from "@/components/empty-screen";
+import { EmptyScreen } from "./_components/empty";
 import { FooterText } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { IconArrowElbow, IconPlus } from "@/components/ui/icons";
@@ -19,7 +18,8 @@ import { ChatScrollAnchor } from "@/lib/hooks/chat-scroll-anchor";
 import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
 import type { ANY } from "@/lib/utils/tool-definition";
 import Textarea from "react-textarea-autosize";
-import type { AI } from "./action";
+import type { AI } from "@/app/action";
+import { UserMessage } from "@/components/bet";
 
 // Force the page to be dynamic and allow streaming responses up to 30 seconds
 export const dynamic = "force-dynamic";
