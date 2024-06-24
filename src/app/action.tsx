@@ -34,7 +34,7 @@ async function confirmBet(amount: number, team: string, symbol: string) {
     <div className="inline-flex items-start gap-1 md:items-center">
       <Spinner />
       <p className="mb-2">
-        Betting {amount} ${symbol}...
+        Betting {amount} {symbol}...
       </p>
     </div>,
   );
@@ -49,7 +49,7 @@ async function confirmBet(amount: number, team: string, symbol: string) {
       <div className="inline-flex items-start gap-1 md:items-center">
         <Spinner />
         <p className="mb-2">
-          Betting {amount} ${symbol}... working on it...
+          Betting {amount} {symbol}... working on it...
         </p>
       </div>,
     );
@@ -59,7 +59,7 @@ async function confirmBet(amount: number, team: string, symbol: string) {
     gui.done(
       <div>
         <p className="mb-2">
-          You have successfully betted {amount} ${symbol} on {team}.
+          You have successfully betted {amount} {symbol} on {team}.
         </p>
       </div>,
     );
