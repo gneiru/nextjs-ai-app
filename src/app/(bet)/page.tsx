@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { useActions, useUIState } from "ai/rsc";
 
 import { ChatList } from "@/components/chat-list";
-import { EmptyScreen } from "./_components/empty";
 import { FooterText } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { IconArrowElbow, IconPlus } from "@/components/ui/icons";
@@ -19,7 +18,7 @@ import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
 import type { ANY } from "@/lib/utils/tool-definition";
 import Textarea from "react-textarea-autosize";
 import type { AI } from "@/app/action";
-import { UserMessage } from "@/components/bet";
+import { EmptyScreen, UserMessage } from "@/components/bet";
 
 // Force the page to be dynamic and allow streaming responses up to 30 seconds
 export const dynamic = "force-dynamic";
